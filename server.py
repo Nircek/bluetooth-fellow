@@ -3,6 +3,7 @@ import PySimpleGUI as sg
 import bluetooth
 from contextlib import closing
 from datetime import datetime
+from sys import exit
 
 '''
 
@@ -27,7 +28,15 @@ options = {
     "profiles": [bluetooth.SERIAL_PORT_PROFILE]
 }
 
-bluetooth.advertise_service(server_sock, name, **options)
+try:
+    bluetooth.advertise_service(server_sock, name, **options)
+except bluetooth.btcommon.BluetoothError as e:
+    print('bluetooth.btcommon.BluetoothError:', e)
+    if str(e) in ('no advertisable device', '[Errno 13] Permission denied'):
+        print("\n\nPlease run:")
+        print("sudo hciconfig hci0 piscan; sudo chmod o+rw /var/run/sdp;")
+    exit(1)
+
 
 print(f"Waiting for connection on RFCOMM channel {port}")
 
